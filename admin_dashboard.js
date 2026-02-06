@@ -807,7 +807,17 @@ function loadHistory() {
 // Logout
 function logout() {
     if (confirm('Are you sure you want to logout?')) {
-        alert('Logged out successfully!');
-        window.location.reload();
+        // Sign out from Firebase
+        firebase.auth().signOut().then(() => {
+            // Clear session storage
+            sessionStorage.removeItem('adminLoggedIn');
+            sessionStorage.removeItem('adminEmail');
+            
+            // Redirect to login page
+            window.location.href = 'admin_login.html';
+        }).catch((error) => {
+            console.error('Logout error:', error);
+            alert('Error logging out. Please try again.');
+        });
     }
 }
