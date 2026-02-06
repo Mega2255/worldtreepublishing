@@ -556,7 +556,7 @@
         document.getElementById('transfer-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const recipientAccount = document.getElementById('recipient-account').value;
+            const recipientAccount = document.getElementById('recipient-account').value.trim();
             const amount = parseFloat(document.getElementById('transfer-amount').value);
             const description = document.getElementById('transfer-description').value;
             const pin = document.getElementById('transfer-pin').value;
@@ -573,16 +573,23 @@
                 return;
             }
             
-            if (amount > currentUser.balance) {
-                alert('Insufficient balance');
+            // Validate recipient account number
+            if (!recipientAccount) {
+                alert('Please enter recipient account number');
                 return;
             }
             
-            // Check if recipient exists
+            // Check if trying to transfer to self
+            if (recipientAccount === currentUser.accountNumber) {
+                alert('Cannot transfer to your own account');
+                return;
+            }
+            
+            // Check if recipient exists in system
             database.ref('users/' + recipientAccount).once('value', (snapshot) => {
                 const recipient = snapshot.val();
                 
-                // Create transfer record with or without recipient
+                // Create transfer record - accepts any account number (system or external)
                 const transferData = {
                     from: currentUser.accountNumber,
                     fromName: currentUser.fullName,
@@ -595,11 +602,13 @@
                     initiatedBy: currentUser.accountNumber
                 };
                 
+                // Save transfer to database - balance will NOT be deducted until admin approves
                 database.ref('transfers').push(transferData)
                     .then(() => {
-                        alert('Transfer initiated successfully! Waiting for admin approval.');
+                        alert('Transfer initiated successfully! Your transfer is pending admin approval. Balance will be deducted once approved.');
                         document.getElementById('transfer-form').reset();
                         showSection('transfer-history');
+                        loadTransferHistory();
                     })
                     .catch((error) => {
                         alert('Error initiating transfer: ' + error.message);
@@ -609,13 +618,14 @@
 
         // Load transfer history
         function loadTransferHistory() {
-            database.ref('transfers').once('value', (snapshot) => {
+            database.ref('transfers').on('value', (snapshot) => {
                 const transfers = snapshot.val();
                 allTransfers = [];
                 
                 if (transfers) {
                     Object.keys(transfers).forEach(transferId => {
                         const transfer = transfers[transferId];
+                        // Include transfers where user is sender OR receiver
                         if (transfer.from === currentUser.accountNumber || transfer.to === currentUser.accountNumber) {
                             allTransfers.push({
                                 id: transferId,
@@ -625,6 +635,7 @@
                     });
                 }
                 
+                // Sort by date (newest first)
                 allTransfers.sort((a, b) => b.date - a.date);
                 filterAndDisplayHistory();
             });
