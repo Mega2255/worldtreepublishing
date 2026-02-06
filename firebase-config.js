@@ -15,3 +15,8 @@ firebase.initializeApp(firebaseConfig);
 
 // Get a reference to the database service
 const database = firebase.database();
+
+// Get a reference to the auth service (if not already initialized)
+if (typeof firebase.auth !== 'undefined') {
+  const auth = firebase.auth();
+}
