@@ -395,10 +395,31 @@
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <!-- Custom Scripts -->
     <script src="firebase-config.js"></script>
+    
+    <!-- Authentication Check -->
+    <script>
+        // Check authentication before loading dashboard
+        const auth = firebase.auth();
+        
+        // Check if user is authenticated
+        auth.onAuthStateChanged((user) => {
+            const isLoggedIn = sessionStorage.getItem('adminLoggedIn') === 'true';
+            
+            if (!user || !isLoggedIn) {
+                // Not authenticated, redirect to login
+                window.location.href = 'admin_login.html';
+            } else {
+                // User is authenticated, load the dashboard
+                console.log('Admin authenticated:', user.email);
+            }
+        });
+    </script>
+    
     <script src="admin_dashboard.js"></script>
 </body>
 </html>
