@@ -591,15 +591,15 @@
                 
                 // Create transfer record - accepts any account number (system or external)
                 const transferData = {
-                    from: currentUser.accountNumber,
-                    fromName: currentUser.fullName,
+                    from: currentUser.accountNumber || '',
+                    fromName: currentUser.fullName || currentUser.firstName || 'Unknown',
                     to: recipientAccount,
-                    toName: recipient ? recipient.fullName : 'External Account',
+                    toName: (recipient && recipient.fullName) ? recipient.fullName : 'External Account',
                     amount: amount,
-                    description: description,
+                    description: description || '',
                     status: 'pending',
                     date: Date.now(),
-                    initiatedBy: currentUser.accountNumber
+                    initiatedBy: currentUser.accountNumber || ''
                 };
                 
                 // Save transfer to database - balance will NOT be deducted until admin approves
@@ -647,9 +647,9 @@
             const statusFilter = document.getElementById('history-status-filter').value;
             
             let filtered = allTransfers.filter(transfer => {
-                const matchesSearch = transfer.fromName.toLowerCase().includes(searchTerm) || 
-                                    transfer.toName.toLowerCase().includes(searchTerm) ||
-                                    transfer.description.toLowerCase().includes(searchTerm);
+                const matchesSearch = (transfer.fromName || '').toLowerCase().includes(searchTerm) || 
+                                    (transfer.toName || '').toLowerCase().includes(searchTerm) ||
+                                    (transfer.description || '').toLowerCase().includes(searchTerm);
                 const matchesStatus = statusFilter === 'all' || transfer.status === statusFilter;
                 return matchesSearch && matchesStatus;
             });
@@ -693,8 +693,8 @@
                             <i class="fas fa-${isOutgoing ? 'arrow-up' : 'arrow-down'} text-${isOutgoing ? 'red' : 'green'}-600"></i>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="font-semibold text-gray-800 truncate">${isOutgoing ? transfer.toName : transfer.fromName}</p>
-                            <p class="text-sm text-gray-500 truncate">${transfer.description}</p>
+                            <p class="font-semibold text-gray-800 truncate">${isOutgoing ? (transfer.toName || 'External Account') : (transfer.fromName || 'Unknown')}</p>
+                            <p class="text-sm text-gray-500 truncate">${transfer.description || ''}</p>
                             <p class="text-xs text-gray-400 mt-1">${new Date(transfer.date).toLocaleDateString()} ${new Date(transfer.date).toLocaleTimeString()}</p>
                         </div>
                     </div>
@@ -737,9 +737,9 @@
             const statusFilter = document.getElementById('history-status-filter').value;
             
             let filtered = allTransfers.filter(transfer => {
-                const matchesSearch = transfer.fromName.toLowerCase().includes(searchTerm) || 
-                                    transfer.toName.toLowerCase().includes(searchTerm) ||
-                                    transfer.description.toLowerCase().includes(searchTerm);
+                const matchesSearch = (transfer.fromName || '').toLowerCase().includes(searchTerm) || 
+                                    (transfer.toName || '').toLowerCase().includes(searchTerm) ||
+                                    (transfer.description || '').toLowerCase().includes(searchTerm);
                 const matchesStatus = statusFilter === 'all' || transfer.status === statusFilter;
                 return matchesSearch && matchesStatus;
             });
